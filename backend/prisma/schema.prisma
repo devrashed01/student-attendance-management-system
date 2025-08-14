@@ -1,0 +1,96 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Subject {
+  id          String   @id @default(uuid())
+  name        String
+  code        String   @unique
+  department  String
+  description String?
+  isActive    Boolean  @default(true)
+  attendanceEnabled Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relationships
+  teacherAssignments TeacherSubject[]
+  studentEnrollments StudentSubject[]
+  attendanceRecords  SubjectAttendance[]
+}
+
+model TeacherSubject {
+  id        String   @id @default(uuid())
+  teacher   User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId String
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId String
+  assignedAt DateTime @default(now())
+  
+  @@unique([teacherId, subjectId])
+}
+
+model StudentSubject {
+  id        String   @id @default(uuid())
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId String
+  enrolledAt DateTime @default(now())
+  
+  @@unique([studentId, subjectId])
+}
+
+model SubjectAttendance {
+  id        String   @id @default(uuid())
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId String
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+  date      DateTime
+  status    String   // 'present' or 'absent'
+  takenBy   User     @relation("AttendanceTakenBy", fields: [takenById], references: [id])
+  takenById String
+  createdAt DateTime @default(now())
+  
+  @@unique([subjectId, studentId, date])
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  date      DateTime
+  status    String   // 'present' or 'absent'
+  student   User  @relation(fields: [studentId], references: [id])
+  studentId String
+}
+
+model User {
+  id       String @id @default(uuid())
+  username String @unique
+  password String
+  name       String
+  email      String?     // Added email field
+  studentId  String?
+  department String?     // Added department field
+  semester   String?     // Added semester field
+  role       Role        @default(STUDENT) // Default role is STUDENT
+  
+  // Relationships
+  attendance          Attendance[]
+  teacherSubjects     TeacherSubject[]
+  studentSubjects     StudentSubject[]
+  attendanceRecords   SubjectAttendance[]
+  attendanceTakenBy   SubjectAttendance[] @relation("AttendanceTakenBy")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  TEACHER
+  STUDENT
+}

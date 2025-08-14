@@ -1,0 +1,24 @@
+import * as Sentry from '@sentry/react';
+import 'nprogress/nprogress.css';
+import { createRoot } from 'react-dom/client';
+
+import '~/assets/styles/fonts.css';
+import App from './App';
+import config from './config';
+import './config/translate';
+
+Sentry.init({
+	dsn: config.sentryDSN,
+	integrations: [Sentry.browserTracingIntegration()],
+	tracesSampleRate: 1.0,
+	enabled: !!config.sentryEnv,
+	environment: config.sentryEnv,
+});
+
+const element = document.getElementById('root');
+const root = createRoot(element as HTMLElement);
+root.render(
+	// <StrictMode>
+	<App />
+	// </StrictMode>
+);
