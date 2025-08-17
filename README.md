@@ -1,8 +1,4 @@
-# React Dashboard Boilerplate
-
-This is a professional Front-end boilerplate for building fast, robust, and adaptable web applications.
-
-It's developed with some specific development philosophy but, you're free to architect your code in the way that you want.
+# Student attendance management system
 
 ## Features
 
